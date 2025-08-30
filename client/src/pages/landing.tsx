@@ -15,7 +15,7 @@ export default function Landing() {
               <h1 className="text-xl font-bold">BITS Eats</h1>
             </div>
             <Button
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => window.location.href = '/login'}
               className="bg-primary hover:bg-primary/90"
               data-testid="button-login"
             >
@@ -51,7 +51,7 @@ export default function Landing() {
             </div>
             <Button
               size="lg"
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => window.location.href = '/login'}
               className="bg-primary hover:bg-primary/90 text-lg px-8 py-3"
               data-testid="button-get-started"
             >

@@ -15,12 +15,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Development role switcher
-  app.post('/api/dev/switch-role', async (req: any, res) => {
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(404).json({ message: "Not found" });
+  // Development authentication
+  app.post('/api/auth/login', async (req: any, res) => {
+    const { email, password } = req.body;
+    
+    // Simple credential check for development
+    const credentials = {
+      'admin@bitsgoa.ac.in': { password: 'admin123', userId: 'admin-001' },
+      'vendor@bitsgoa.ac.in': { password: 'vendor123', userId: 'vendor-001' },
+      'student@bitsgoa.ac.in': { password: 'user123', userId: 'user-001' }
+    };
+    
+    const userCred = credentials[email as keyof typeof credentials];
+    if (!userCred || userCred.password !== password) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
     
+    // Store user in session
+    req.session.currentUserId = userCred.userId;
+    
+    const user = await storage.getUser(userCred.userId);
+    res.json(user);
+  });
+
+  app.post('/api/auth/logout', (req: any, res) => {
+    req.session.currentUserId = null;
+    res.json({ message: "Logged out successfully" });
+  });
+
+  // Development role switcher
+  app.post('/api/dev/switch-role', async (req: any, res) => {
     const { userId } = req.body;
     const validUserIds = ['user-001', 'vendor-001', 'admin-001'];
     
