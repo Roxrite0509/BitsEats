@@ -11,10 +11,15 @@ export function useAuth() {
   });
 
   const switchRole = useMutation({
-    mutationFn: (userId: string) => apiRequest(`/api/dev/switch-role`, {
-      method: "POST",
-      body: { userId }
-    }),
+    mutationFn: async (userId: string) => {
+      const response = await fetch('/api/dev/switch-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      if (!response.ok) throw new Error('Failed to switch role');
+      return response.json();
+    },
     onSuccess: (newUser) => {
       queryClient.setQueryData(["/api/auth/user"], newUser);
       queryClient.invalidateQueries();

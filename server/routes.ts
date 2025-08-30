@@ -66,6 +66,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   };
 
+  // Middleware to populate currentUser for all authenticated routes
+  const populateCurrentUser = async (req: any, res: any, next: any) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      req.currentUser = user;
+      next();
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching user data" });
+    }
+  };
+
   // Vendor routes
   app.get('/api/vendors', async (req, res) => {
     try {
@@ -190,21 +202,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Order routes
-  app.get('/api/orders', isAuthenticated, async (req: any, res) => {
+  app.get('/api/orders', isAuthenticated, populateCurrentUser, async (req: any, res) => {
     try {
-      const userId = req.currentUser.id;
+      const user = req.currentUser;
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
       let orders;
 
-      if (req.currentUser.role === 'admin') {
+      if (user.role === 'admin') {
         orders = await storage.getOrders();
-      } else if (req.currentUser.role === 'vendor') {
-        const vendor = await storage.getVendorByUserId(userId);
+      } else if (user.role === 'vendor') {
+        const vendor = await storage.getVendorByUserId(user.id);
         if (!vendor) {
           return res.status(404).json({ message: "Vendor profile not found" });
         }
         orders = await storage.getOrders(undefined, vendor.id);
       } else {
-        orders = await storage.getOrders(userId);
+        orders = await storage.getOrders(user.id);
       }
 
       res.json(orders);
