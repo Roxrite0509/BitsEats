@@ -165,15 +165,17 @@ export class DatabaseStorage implements IStorage {
 
   // Order operations
   async getOrders(userId?: string, vendorId?: string): Promise<Order[]> {
-    let query = db.select().from(orders);
-    
     if (userId) {
-      query = query.where(eq(orders.userId, userId));
+      return await db.select().from(orders)
+        .where(eq(orders.userId, userId))
+        .orderBy(desc(orders.createdAt));
     } else if (vendorId) {
-      query = query.where(eq(orders.vendorId, vendorId));
+      return await db.select().from(orders)
+        .where(eq(orders.vendorId, vendorId))
+        .orderBy(desc(orders.createdAt));
     }
     
-    return await query.orderBy(desc(orders.createdAt));
+    return await db.select().from(orders).orderBy(desc(orders.createdAt));
   }
 
   async getOrder(id: string): Promise<Order | undefined> {
@@ -299,7 +301,7 @@ export class DatabaseStorage implements IStorage {
         eq(orders.paymentStatus, "completed")
       ))
       .where(eq(vendors.isActive, true))
-      .groupBy(vendors.id, vendors.name, vendors.rating)
+      .groupBy(vendors.id, vendors.name)
       .orderBy(desc(count(orders.id)))
       .limit(10);
   }
