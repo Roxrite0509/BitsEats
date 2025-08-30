@@ -1,0 +1,72 @@
+## Goal
+Design and develop a comprehensive multi-vendor food delivery web application specifically tailored for BITS Goa campus, with potential for future mobile application expansion, focusing on seamless integration of campus eateries.
+
+## Return Format
+1. Complete web application source code
+2. Detailed project structure
+3. .environment file with all necessary configuration variables
+4. Deployment-ready repository
+5. Documentation for setup and future development
+
+## Warnings
+- Ensure strict data privacy and security for student and vendor information
+- Implement robust authentication mechanisms
+- Handle potential scalability challenges within campus ecosystem
+- Protect against potential misuse or unauthorized access
+- Validate vendor and menu information accuracy
+- Implement rate limiting and transaction security
+
+## Context
+- Platform: Web application with mobile app potential
+- Authentication: Google Mail or Phone Number login
+- Database: Neon PostgreSQL with Drizzle ORM
+- UI/UX: Dark themed interface
+- Inspiration Repository: https://github.com/enatega/food-delivery-multivendor
+
+Specific Development Requirements:
+- Three distinct dashboards:
+  1. User Dashboard
+  2. Vendor-specific Dashboard
+  3. Admin Dashboard with comprehensive order tracking
+- Exclusively serve BITS Goa campus eateries
+- Implement secure, scalable architecture
+- Follow modern web development best practices
+- Ensure responsive design for multiple device types
+
+Technical Stack Recommendations:
+- Frontend: React/Next.js
+- Backend: Node.js/Express
+- Authentication: Firebase/Google OAuth
+- State Management: Redux/Context API
+- Styling: Tailwind CSS (dark mode compatible)
+- ORM: Drizzle
+- Database: Neon PostgreSQL
+
+Critical Implementation Notes:
+- Generate comprehensive .environment file with:
+  - Database connection strings
+  - OAuth credentials
+  - API keys
+  - Encryption salts
+- Implement role-based access control
+- Create modular, extensible codebase
+- Design with future mobile app conversion in mind
+
+Mandatory Features:
+- Real-time order tracking
+- Vendor menu management
+- User reviews and ratings
+- Secure payment integration
+- Comprehensive admin analytics
+
+Performance and Security Priorities:
+- Minimize database query complexity
+- Implement efficient caching mechanisms
+- Use server-side rendering for initial load optimization
+- Enforce strict input validation
+- Implement comprehensive error handling
+
+Deployment Considerations:
+- Create Docker containerization support
+- Develop CI/CD pipeline configuration
+- Ensure easy local and cloud deployment options
