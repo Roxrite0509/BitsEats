@@ -74,6 +74,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User role check middleware
   const requireRole = (roles: string[]) => {
     return async (req: any, res: any, next: any) => {
+      // In development, skip role checks - allow all access
+      if (process.env.NODE_ENV === 'development') {
+        const userId = req.session?.currentUserId || 'admin-001';
+        const user = await storage.getUser(userId);
+        req.currentUser = user;
+        return next();
+      }
+      
       try {
         const userId = req.user.claims.sub;
         const user = await storage.getUser(userId);
