@@ -1,0 +1,1292 @@
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITS Goa Food Delivery - Campus Dining Made Easy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                }
+            },
+            fontFamily: {
+                sans: ['Inter', 'system-ui', 'sans-serif'],
+            }
+        }
+    };
+    </script>
+
+    <style>
+        :root {
+            --background: hsl(240 10% 3.9%);
+            --foreground: hsl(0 0% 98%);
+            --card: hsl(240 10% 3.9%);
+            --card-foreground: hsl(0 0% 98%);
+            --popover: hsl(240 10% 3.9%);
+            --popover-foreground: hsl(0 0% 98%);
+            --primary: hsl(25 95% 53%);
+            --primary-foreground: hsl(0 0% 98%);
+            --secondary: hsl(240 3.7% 15.9%);
+            --secondary-foreground: hsl(0 0% 98%);
+            --muted: hsl(240 3.7% 15.9%);
+            --muted-foreground: hsl(240 5% 64.9%);
+            --accent: hsl(240 3.7% 15.9%);
+            --accent-foreground: hsl(0 0% 98%);
+            --destructive: hsl(0 62.8% 30.6%);
+            --destructive-foreground: hsl(0 0% 98%);
+            --border: hsl(240 3.7% 15.9%);
+            --input: hsl(240 3.7% 15.9%);
+            --ring: hsl(25 95% 53%);
+            --radius: 0.75rem;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .food-card {
+            background: linear-gradient(145deg, hsl(240 3.7% 15.9%), hsl(240 3.7% 12%));
+        }
+        
+        .status-preparing { color: hsl(45 93% 47%); }
+        .status-ready { color: hsl(142 76% 36%); }
+        .status-delivered { color: hsl(142 76% 36%); }
+        .status-cancelled { color: hsl(0 62.8% 30.6%); }
+        
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-foreground min-h-screen">
+    <!-- @COMPONENT: MainApp [role-based dashboard switcher] -->
+    <div id="app" class="min-h-screen">
+        
+        <!-- Navigation Header -->
+        <header class="bg-card border-b border-border sticky top-0 z-50 glass-effect">
+            <div class="container mx-auto px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                                <i class="fas fa-utensils text-primary-foreground text-sm"></i>
+                            </div>
+                            <h1 class="text-xl font-bold">BITS Eats</h1>
+                        </div>
+                        <span class="text-xs bg-secondary px-2 py-1 rounded-full text-secondary-foreground">Campus Only</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Dashboard Role Switcher (for demo purposes) -->
+                        <select id="roleSelector" class="bg-input border border-border rounded-md px-3 py-1 text-sm">
+                            <option value="user">User Dashboard</option>
+                            <option value="vendor">Vendor Dashboard</option>
+                            <option value="admin">Admin Dashboard</option>
+                        </select>
+                        
+                        <div class="flex items-center space-x-2">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&w=32&h=32&fit=crop&crop=face" alt="User profile" class="w-8 h-8 rounded-full">
+                            <span class="text-sm font-medium" data-bind="user.name">John Doe</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- @COMPONENT: UserDashboard [main customer interface] -->
+        <div id="userDashboard" class="dashboard-content">
+            <div class="container mx-auto px-4 py-6">
+                
+                <!-- Hero Section -->
+                <div class="mb-8">
+                    <div class="bg-gradient-to-r from-primary to-orange-600 rounded-2xl p-8 text-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <h2 class="text-3xl font-bold mb-2">Hungry? We've got you covered!</h2>
+                            <p class="text-lg opacity-90 mb-4">Order from your favorite campus eateries</p>
+                            <div class="flex items-center space-x-4">
+                                <div class="flex items-center space-x-2 bg-white/20 rounded-lg px-3 py-2">
+                                    <i class="fas fa-clock text-sm"></i>
+                                    <span class="text-sm">15-30 min delivery</span>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-white/20 rounded-lg px-3 py-2">
+                                    <i class="fas fa-map-marker-alt text-sm"></i>
+                                    <span class="text-sm">BITS Goa Campus</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Background food illustration -->
+                        <div class="absolute top-0 right-0 w-64 h-64 opacity-10">
+                            <i class="fas fa-pizza-slice text-9xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="mb-8">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1 relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
+                            <input type="search" placeholder="Search restaurants, cuisines, dishes..." 
+                                   class="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring">
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="px-4 py-3 bg-primary text-primary-foreground rounded-lg flex items-center space-x-2 hover:bg-primary/90">
+                                <i class="fas fa-filter"></i>
+                                <span>Filters</span>
+                            </button>
+                            <button class="px-4 py-3 bg-secondary text-secondary-foreground rounded-lg flex items-center space-x-2 hover:bg-secondary/90">
+                                <i class="fas fa-sort"></i>
+                                <span>Sort</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Categories -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-4">Quick Picks</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                        <!-- @MAP: categories.map(category => ( -->
+                        <div class="bg-card border border-border rounded-xl p-4 text-center hover:bg-accent cursor-pointer transition-colors">
+                            <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-pizza-slice text-primary text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium">Pizza</span>
+                        </div>
+                        <div class="bg-card border border-border rounded-xl p-4 text-center hover:bg-accent cursor-pointer transition-colors">
+                            <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-hamburger text-primary text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium">Burgers</span>
+                        </div>
+                        <div class="bg-card border border-border rounded-xl p-4 text-center hover:bg-accent cursor-pointer transition-colors">
+                            <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-ice-cream text-primary text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium">Desserts</span>
+                        </div>
+                        <div class="bg-card border border-border rounded-xl p-4 text-center hover:bg-accent cursor-pointer transition-colors">
+                            <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-coffee text-primary text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium">Beverages</span>
+                        </div>
+                        <div class="bg-card border border-border rounded-xl p-4 text-center hover:bg-accent cursor-pointer transition-colors">
+                            <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-seedling text-primary text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium">Healthy</span>
+                        </div>
+                        <div class="bg-card border border-border rounded-xl p-4 text-center hover:bg-accent cursor-pointer transition-colors">
+                            <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-pepper-hot text-primary text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium">Spicy</span>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+
+                <!-- Campus Restaurants -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold">Campus Restaurants</h3>
+                        <button class="text-primary hover:text-primary/80 text-sm font-medium">View All</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- @MAP: restaurants.map(restaurant => ( -->
+                        <div class="bg-card border border-border rounded-2xl overflow-hidden card-hover food-card">
+                            <!-- Delicious Indian curry with rice and naan bread -->
+                            <img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-4.0.3&w=400&h=200&fit=crop" 
+                                 alt="Restaurant food" class="w-full h-48 object-cover">
+                            <div class="p-4">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div>
+                                        <h4 class="font-bold text-lg" data-bind="restaurant.name">Spice Route</h4>
+                                        <p class="text-muted-foreground text-sm" data-bind="restaurant.cuisine">Indian • North Indian</p>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-green-600/20 px-2 py-1 rounded-full">
+                                        <i class="fas fa-star text-green-400 text-xs"></i>
+                                        <span class="text-green-400 text-sm font-medium" data-bind="restaurant.rating">4.5</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-muted-foreground mb-3">
+                                    <span data-bind="restaurant.deliveryTime">25-35 min</span>
+                                    <span data-bind="restaurant.location">Food Court, Ground Floor</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm">
+                                        <span class="text-muted-foreground">Free delivery on orders above </span>
+                                        <span class="text-primary font-medium">₹200</span>
+                                    </div>
+                                    <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                        Order Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-2xl overflow-hidden card-hover food-card">
+                            <!-- Fresh Italian pizza with melted cheese and toppings -->
+                            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&w=400&h=200&fit=crop" 
+                                 alt="Restaurant food" class="w-full h-48 object-cover">
+                            <div class="p-4">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div>
+                                        <h4 class="font-bold text-lg">Campus Pizza Co.</h4>
+                                        <p class="text-muted-foreground text-sm">Italian • Pizza • Fast Food</p>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-green-600/20 px-2 py-1 rounded-full">
+                                        <i class="fas fa-star text-green-400 text-xs"></i>
+                                        <span class="text-green-400 text-sm font-medium">4.2</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-muted-foreground mb-3">
+                                    <span>20-30 min</span>
+                                    <span>Near Library</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm">
+                                        <span class="text-muted-foreground">Free delivery on orders above </span>
+                                        <span class="text-primary font-medium">₹150</span>
+                                    </div>
+                                    <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                        Order Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-2xl overflow-hidden card-hover food-card">
+                            <!-- Healthy green smoothie bowl with fresh fruits and granola -->
+                            <img src="https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?ixlib=rb-4.0.3&w=400&h=200&fit=crop" 
+                                 alt="Restaurant food" class="w-full h-48 object-cover">
+                            <div class="p-4">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div>
+                                        <h4 class="font-bold text-lg">Healthy Bites</h4>
+                                        <p class="text-muted-foreground text-sm">Healthy • Salads • Smoothies</p>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-green-600/20 px-2 py-1 rounded-full">
+                                        <i class="fas fa-star text-green-400 text-xs"></i>
+                                        <span class="text-green-400 text-sm font-medium">4.7</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-muted-foreground mb-3">
+                                    <span>15-25 min</span>
+                                    <span>Student Activity Center</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm">
+                                        <span class="text-muted-foreground">Free delivery on orders above </span>
+                                        <span class="text-primary font-medium">₹100</span>
+                                    </div>
+                                    <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                        Order Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+
+                <!-- Current Orders -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold mb-4">Your Orders</h3>
+                    <div class="bg-card border border-border rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-receipt text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium" data-bind="order.restaurantName">Spice Route</h4>
+                                    <p class="text-muted-foreground text-sm" data-bind="order.items">Butter Chicken, Garlic Naan x2</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <span class="status-preparing">
+                                        <i class="fas fa-circle text-xs"></i>
+                                        Preparing
+                                    </span>
+                                </div>
+                                <p class="text-sm text-muted-foreground" data-bind="order.estimatedTime">15 min remaining</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-semibold" data-bind="order.total">₹485</span>
+                            <button class="text-primary hover:text-primary/80 text-sm font-medium" data-event="click:trackOrder">
+                                Track Order <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Reorder -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold mb-4">Quick Reorder</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- @MAP: previousOrders.map(order => ( -->
+                        <div class="bg-card border border-border rounded-xl p-4 hover:bg-accent cursor-pointer transition-colors">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <!-- Colorful spicy Indian biryani with basmati rice -->
+                                <img src="https://pixabay.com/get/g07a66c7610f4150d4e716f88d25937144ac401333608b9dfacf65ca6303bba0524e5229b91e7855d0d76ea9e1cbe22f2a4c68ba78facaa98e76e1af38d634ad7_1280.jpg" 
+                                     alt="Previous order" class="w-12 h-12 rounded-lg object-cover">
+                                <div class="flex-1">
+                                    <h5 class="font-medium text-sm" data-bind="order.itemName">Chicken Biryani</h5>
+                                    <p class="text-muted-foreground text-xs" data-bind="order.restaurantName">Spice Route</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium" data-bind="order.price">₹250</span>
+                                <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded-md text-xs">
+                                    <i class="fas fa-plus mr-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-card border border-border rounded-xl p-4 hover:bg-accent cursor-pointer transition-colors">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <!-- Fresh Caesar salad with crispy lettuce and parmesan -->
+                                <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&w=60&h=60&fit=crop" 
+                                     alt="Previous order" class="w-12 h-12 rounded-lg object-cover">
+                                <div class="flex-1">
+                                    <h5 class="font-medium text-sm">Caesar Salad</h5>
+                                    <p class="text-muted-foreground text-xs">Healthy Bites</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium">₹180</span>
+                                <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded-md text-xs">
+                                    <i class="fas fa-plus mr-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-card border border-border rounded-xl p-4 hover:bg-accent cursor-pointer transition-colors">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <!-- Iced coffee drink with whipped cream in clear glass -->
+                                <img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&w=60&h=60&fit=crop" 
+                                     alt="Previous order" class="w-12 h-12 rounded-lg object-cover">
+                                <div class="flex-1">
+                                    <h5 class="font-medium text-sm">Iced Latte</h5>
+                                    <p class="text-muted-foreground text-xs">Campus Cafe</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium">₹120</span>
+                                <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded-md text-xs">
+                                    <i class="fas fa-plus mr-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-card border border-border rounded-xl p-4 hover:bg-accent cursor-pointer transition-colors">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <!-- Stacked sandwich with fresh vegetables and meat -->
+                                <img src="https://images.unsplash.com/photo-1539252554453-80ab65ce3586?ixlib=rb-4.0.3&w=60&h=60&fit=crop" 
+                                     alt="Previous order" class="w-12 h-12 rounded-lg object-cover">
+                                <div class="flex-1">
+                                    <h5 class="font-medium text-sm">Club Sandwich</h5>
+                                    <p class="text-muted-foreground text-xs">Campus Deli</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium">₹200</span>
+                                <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded-md text-xs">
+                                    <i class="fas fa-plus mr-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: UserDashboard -->
+
+        <!-- @COMPONENT: VendorDashboard [restaurant owner interface] -->
+        <div id="vendorDashboard" class="dashboard-content hidden">
+            <div class="flex min-h-screen">
+                <!-- Sidebar -->
+                <div class="w-64 bg-card border-r border-border">
+                    <div class="p-6">
+                        <div class="flex items-center space-x-3 mb-8">
+                            <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                                <i class="fas fa-store text-primary-foreground"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold" data-bind="vendor.name">Spice Route</h3>
+                                <p class="text-muted-foreground text-sm">Vendor Dashboard</p>
+                            </div>
+                        </div>
+                        
+                        <nav class="space-y-2">
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 bg-primary/20 text-primary rounded-lg">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Dashboard</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-receipt"></i>
+                                <span>Orders</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-utensils"></i>
+                                <span>Menu</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-star"></i>
+                                <span>Reviews</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Analytics</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="flex-1 p-6">
+                    <!-- Stats Overview -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-muted-foreground text-sm">Today's Orders</p>
+                                    <p class="text-3xl font-bold" data-bind="stats.todayOrders">24</p>
+                                </div>
+                                <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-receipt text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 text-sm mt-2">
+                                <i class="fas fa-arrow-up text-green-400"></i>
+                                <span class="text-green-400">+12%</span>
+                                <span class="text-muted-foreground">vs yesterday</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-muted-foreground text-sm">Revenue</p>
+                                    <p class="text-3xl font-bold" data-bind="stats.revenue">₹8,450</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-rupee-sign text-green-400"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 text-sm mt-2">
+                                <i class="fas fa-arrow-up text-green-400"></i>
+                                <span class="text-green-400">+8%</span>
+                                <span class="text-muted-foreground">vs yesterday</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-muted-foreground text-sm">Avg Rating</p>
+                                    <p class="text-3xl font-bold" data-bind="stats.avgRating">4.5</p>
+                                </div>
+                                <div class="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 text-sm mt-2">
+                                <span class="text-muted-foreground">Based on 156 reviews</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-muted-foreground text-sm">Pending Orders</p>
+                                    <p class="text-3xl font-bold" data-bind="stats.pendingOrders">7</p>
+                                </div>
+                                <div class="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-clock text-yellow-400"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 text-sm mt-2">
+                                <span class="text-muted-foreground">Needs attention</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Orders -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <h4 class="text-lg font-bold mb-4">Active Orders</h4>
+                            <div class="space-y-4">
+                                <!-- @MAP: activeOrders.map(order => ( -->
+                                <div class="border border-border rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div>
+                                            <h5 class="font-medium" data-bind="order.id">Order #1234</h5>
+                                            <p class="text-muted-foreground text-sm" data-bind="order.customer">Rahul Sharma</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="status-preparing font-medium">Preparing</span>
+                                            <p class="text-muted-foreground text-sm" data-bind="order.time">5 min ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1 mb-3">
+                                        <p class="text-sm" data-bind="order.items">2x Butter Chicken, 3x Garlic Naan</p>
+                                        <p class="text-sm text-muted-foreground" data-bind="order.notes">Extra spicy, no onions</p>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold" data-bind="order.total">₹485</span>
+                                        <div class="space-x-2">
+                                            <button class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm" data-event="click:markReady">
+                                                Mark Ready
+                                            </button>
+                                            <button class="bg-destructive hover:bg-destructive/90 text-destructive-foreground px-3 py-1 rounded-md text-sm" data-event="click:cancelOrder">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border border-border rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div>
+                                            <h5 class="font-medium">Order #1235</h5>
+                                            <p class="text-muted-foreground text-sm">Priya Patel</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="status-ready font-medium">Ready</span>
+                                            <p class="text-muted-foreground text-sm">2 min ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1 mb-3">
+                                        <p class="text-sm">1x Paneer Tikka, 2x Roti</p>
+                                        <p class="text-sm text-muted-foreground">Medium spice level</p>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold">₹320</span>
+                                        <div class="space-x-2">
+                                            <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded-md text-sm" data-event="click:dispatchOrder">
+                                                Dispatch
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+
+                        <!-- Menu Quick Actions -->
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-lg font-bold">Menu Management</h4>
+                                <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm" data-event="click:addMenuItem">
+                                    <i class="fas fa-plus mr-2"></i>Add Item
+                                </button>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <!-- @MAP: menuItems.slice(0,5).map(item => ( -->
+                                <div class="flex items-center justify-between p-3 border border-border rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <!-- Appetizing butter chicken curry in ceramic bowl -->
+                                        <img src="https://pixabay.com/get/ge92b1e1f390e0c7a365a2981c4d77b98545ca318a81f25dab65302d13c33bfd31a2d25579230d863b1c48269a9b4e7ff8bcc7b3a87b49b144366047d0ef3b9e6_1280.jpg" 
+                                             alt="Menu item" class="w-12 h-12 rounded-lg object-cover">
+                                        <div>
+                                            <h5 class="font-medium" data-bind="item.name">Butter Chicken</h5>
+                                            <p class="text-muted-foreground text-sm" data-bind="item.price">₹250</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" checked class="sr-only peer" data-bind="item.available">
+                                            <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        </label>
+                                        <button class="text-muted-foreground hover:text-foreground" data-event="click:editMenuItem">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 border border-border rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <!-- Traditional Indian naan bread with garlic and herbs -->
+                                        <img src="https://pixabay.com/get/gf15325a7b2e408dde4f5397842118cb07989d7256d38ca49b2c30532076ae12e4e2180c2fe3ea2e8a303cc7bf453ad7c54caab10536e1d472eeee8e75c483f17_1280.jpg" 
+                                             alt="Menu item" class="w-12 h-12 rounded-lg object-cover">
+                                        <div>
+                                            <h5 class="font-medium">Garlic Naan</h5>
+                                            <p class="text-muted-foreground text-sm">₹80</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" checked class="sr-only peer">
+                                            <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        </label>
+                                        <button class="text-muted-foreground hover:text-foreground">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 border border-border rounded-lg opacity-60">
+                                    <div class="flex items-center space-x-3">
+                                        <!-- Creamy paneer tikka masala with basmati rice -->
+                                        <img src="https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?ixlib=rb-4.0.3&w=48&h=48&fit=crop" 
+                                             alt="Menu item" class="w-12 h-12 rounded-lg object-cover">
+                                        <div>
+                                            <h5 class="font-medium">Paneer Tikka</h5>
+                                            <p class="text-muted-foreground text-sm">₹280</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        </label>
+                                        <button class="text-muted-foreground hover:text-foreground">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Orders Table -->
+                    <div class="bg-card border border-border rounded-xl p-6">
+                        <h4 class="text-lg font-bold mb-4">Recent Orders</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-border">
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Order ID</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Customer</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Items</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Total</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Status</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- @MAP: recentOrders.map(order => ( -->
+                                    <tr class="border-b border-border">
+                                        <td class="py-3 text-sm font-medium" data-bind="order.id">#1234</td>
+                                        <td class="py-3 text-sm" data-bind="order.customer">Rahul Sharma</td>
+                                        <td class="py-3 text-sm text-muted-foreground" data-bind="order.items">Butter Chicken, Naan x2</td>
+                                        <td class="py-3 text-sm font-medium" data-bind="order.total">₹485</td>
+                                        <td class="py-3">
+                                            <span class="status-preparing bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs font-medium">
+                                                Preparing
+                                            </span>
+                                        </td>
+                                        <td class="py-3 text-sm text-muted-foreground" data-bind="order.time">5 min ago</td>
+                                    </tr>
+                                    <tr class="border-b border-border">
+                                        <td class="py-3 text-sm font-medium">#1233</td>
+                                        <td class="py-3 text-sm">Priya Patel</td>
+                                        <td class="py-3 text-sm text-muted-foreground">Paneer Tikka, Roti x2</td>
+                                        <td class="py-3 text-sm font-medium">₹320</td>
+                                        <td class="py-3">
+                                            <span class="status-ready bg-green-500/20 text-green-400 px-2 py-1 rounded-full text-xs font-medium">
+                                                Ready
+                                            </span>
+                                        </td>
+                                        <td class="py-3 text-sm text-muted-foreground">8 min ago</td>
+                                    </tr>
+                                    <tr class="border-b border-border">
+                                        <td class="py-3 text-sm font-medium">#1232</td>
+                                        <td class="py-3 text-sm">Amit Kumar</td>
+                                        <td class="py-3 text-sm text-muted-foreground">Dal Makhani, Rice</td>
+                                        <td class="py-3 text-sm font-medium">₹180</td>
+                                        <td class="py-3">
+                                            <span class="status-delivered bg-green-500/20 text-green-400 px-2 py-1 rounded-full text-xs font-medium">
+                                                Delivered
+                                            </span>
+                                        </td>
+                                        <td class="py-3 text-sm text-muted-foreground">15 min ago</td>
+                                    </tr>
+                                    <!-- @END_MAP )) -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: VendorDashboard -->
+
+        <!-- @COMPONENT: AdminDashboard [system administrator interface] -->
+        <div id="adminDashboard" class="dashboard-content hidden">
+            <div class="flex min-h-screen">
+                <!-- Admin Sidebar -->
+                <div class="w-64 bg-card border-r border-border">
+                    <div class="p-6">
+                        <div class="flex items-center space-x-3 mb-8">
+                            <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-primary-foreground"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold">Admin Panel</h3>
+                                <p class="text-muted-foreground text-sm">System Overview</p>
+                            </div>
+                        </div>
+                        
+                        <nav class="space-y-2">
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 bg-primary/20 text-primary rounded-lg">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Overview</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-store"></i>
+                                <span>Vendors</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-users"></i>
+                                <span>Users</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-receipt"></i>
+                                <span>All Orders</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Analytics</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Payments</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 px-3 py-2 hover:bg-accent rounded-lg transition-colors">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Admin Main Content -->
+                <div class="flex-1 p-6">
+                    <!-- Platform Overview Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-muted-foreground text-sm">Total Orders Today</p>
+                                    <p class="text-3xl font-bold" data-bind="adminStats.totalOrders">147</p>
+                                </div>
+                                <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-shopping-cart text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 text-sm mt-2">
+                                <i class="fas fa-arrow-up text-green-400"></i>
+                                <span class="text-green-400">+23%</span>
+                                <span class="text-muted-foreground">vs yesterday</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-muted-foreground text-sm">Platform Revenue</p>
+                                    <p class="text-3xl font-bold" data-bind="adminStats.revenue">₹28,750</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-rupee-sign text-green-400"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 text-sm mt-2">
+                                <i class="fas fa-arrow-up text-green-400"></i>
+                                <span class="text-green-400">+18%</span>
+                                <span class="text-muted-foreground">vs yesterday</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-muted-foreground text-sm">Active Vendors</p>
+                                    <p class="text-3xl font-bold" data-bind="adminStats.activeVendors">12</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-store text-blue-400"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 text-sm mt-2">
+                                <span class="text-muted-foreground">2 pending approval</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-muted-foreground text-sm">Active Users</p>
+                                    <p class="text-3xl font-bold" data-bind="adminStats.activeUsers">1,247</p>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-users text-purple-400"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1 text-sm mt-2">
+                                <span class="text-muted-foreground">89 new this week</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Order Monitoring -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <div class="lg:col-span-2 bg-card border border-border rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-lg font-bold">Live Order Tracking</h4>
+                                <div class="flex items-center space-x-2 text-sm text-muted-foreground">
+                                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse-slow"></div>
+                                    <span>Live Updates</span>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <!-- @MAP: liveOrders.map(order => ( -->
+                                <div class="border border-border rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-receipt text-primary text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-medium" data-bind="order.id">Order #1234</h5>
+                                                <p class="text-muted-foreground text-sm" data-bind="order.vendor">Spice Route → Rahul Sharma</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="status-preparing font-medium">Preparing</span>
+                                            <p class="text-muted-foreground text-sm" data-bind="order.time">5 min ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm" data-bind="order.items">2x Butter Chicken, 3x Garlic Naan</span>
+                                        <span class="font-bold" data-bind="order.total">₹485</span>
+                                    </div>
+                                </div>
+
+                                <div class="border border-border rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-receipt text-primary text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-medium">#1235</h5>
+                                                <p class="text-muted-foreground text-sm">Campus Pizza Co. → Priya Patel</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="status-ready font-medium">Ready for Pickup</span>
+                                            <p class="text-muted-foreground text-sm">2 min ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">1x Margherita Pizza (Large)</span>
+                                        <span class="font-bold">₹420</span>
+                                    </div>
+                                </div>
+
+                                <div class="border border-border rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-receipt text-primary text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-medium">#1236</h5>
+                                                <p class="text-muted-foreground text-sm">Healthy Bites → Amit Singh</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="status-delivered font-medium">Delivered</span>
+                                            <p class="text-muted-foreground text-sm">12 min ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">Caesar Salad, Green Smoothie</span>
+                                        <span class="font-bold">₹300</span>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+
+                        <!-- Top Performing Vendors -->
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <h4 class="text-lg font-bold mb-4">Top Vendors Today</h4>
+                            <div class="space-y-4">
+                                <!-- @MAP: topVendors.map((vendor, index) => ( -->
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
+                                        <span class="text-primary font-bold text-sm" data-bind="vendor.rank">1</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h5 class="font-medium" data-bind="vendor.name">Spice Route</h5>
+                                        <p class="text-muted-foreground text-sm" data-bind="vendor.orders">24 orders</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-bold text-sm" data-bind="vendor.revenue">₹8,450</p>
+                                        <p class="text-green-400 text-xs">+12%</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-secondary/40 rounded-lg flex items-center justify-center">
+                                        <span class="text-muted-foreground font-bold text-sm">2</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h5 class="font-medium">Campus Pizza Co.</h5>
+                                        <p class="text-muted-foreground text-sm">18 orders</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-bold text-sm">₹6,120</p>
+                                        <p class="text-green-400 text-xs">+8%</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-secondary/40 rounded-lg flex items-center justify-center">
+                                        <span class="text-muted-foreground font-bold text-sm">3</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h5 class="font-medium">Healthy Bites</h5>
+                                        <p class="text-muted-foreground text-sm">15 orders</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-bold text-sm">₹4,850</p>
+                                        <p class="text-green-400 text-xs">+15%</p>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campus Activity Map -->
+                    <div class="mb-8">
+                        <div class="bg-card border border-border rounded-xl p-6">
+                            <h4 class="text-lg font-bold mb-4">Campus Delivery Activity</h4>
+                            <!-- @FUNCTIONALITY: This should integrate with Google Maps API to show real-time delivery locations -->
+                            <div class="bg-muted/20 rounded-lg h-64 flex items-center justify-center border border-border">
+                                <div class="text-center">
+                                    <i class="fas fa-map-marker-alt text-4xl text-primary mb-2"></i>
+                                    <p class="text-muted-foreground">Live Delivery Map</p>
+                                    <p class="text-xs text-muted-foreground">Shows active deliveries across campus</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vendor Management -->
+                    <div class="bg-card border border-border rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-bold">Vendor Management</h4>
+                            <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm">
+                                <i class="fas fa-plus mr-2"></i>Add Vendor
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-border">
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Vendor</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Status</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Orders Today</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Revenue</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Rating</th>
+                                        <th class="text-left py-3 text-sm font-medium text-muted-foreground">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- @MAP: vendors.map(vendor => ( -->
+                                    <tr class="border-b border-border">
+                                        <td class="py-3">
+                                            <div class="flex items-center space-x-3">
+                                                <!-- Modern restaurant interior with warm lighting -->
+                                                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&w=40&h=40&fit=crop" 
+                                                     alt="Vendor" class="w-10 h-10 rounded-lg object-cover">
+                                                <div>
+                                                    <h5 class="font-medium" data-bind="vendor.name">Spice Route</h5>
+                                                    <p class="text-muted-foreground text-sm" data-bind="vendor.location">Food Court, Ground Floor</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="bg-green-500/20 text-green-400 px-2 py-1 rounded-full text-xs font-medium">
+                                                Active
+                                            </span>
+                                        </td>
+                                        <td class="py-3 text-sm font-medium" data-bind="vendor.todayOrders">24</td>
+                                        <td class="py-3 text-sm font-medium" data-bind="vendor.revenue">₹8,450</td>
+                                        <td class="py-3">
+                                            <div class="flex items-center space-x-1">
+                                                <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                                <span class="text-sm font-medium" data-bind="vendor.rating">4.5</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="flex items-center space-x-2">
+                                                <button class="text-primary hover:text-primary/80" data-event="click:viewVendor">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-muted-foreground hover:text-foreground" data-event="click:editVendor">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <tr class="border-b border-border">
+                                        <td class="py-3">
+                                            <div class="flex items-center space-x-3">
+                                                <!-- Cozy pizza restaurant with wood-fired oven -->
+                                                <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&w=40&h=40&fit=crop" 
+                                                     alt="Vendor" class="w-10 h-10 rounded-lg object-cover">
+                                                <div>
+                                                    <h5 class="font-medium">Campus Pizza Co.</h5>
+                                                    <p class="text-muted-foreground text-sm">Near Library</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="bg-green-500/20 text-green-400 px-2 py-1 rounded-full text-xs font-medium">
+                                                Active
+                                            </span>
+                                        </td>
+                                        <td class="py-3 text-sm font-medium">18</td>
+                                        <td class="py-3 text-sm font-medium">₹6,120</td>
+                                        <td class="py-3">
+                                            <div class="flex items-center space-x-1">
+                                                <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                                <span class="text-sm font-medium">4.2</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="flex items-center space-x-2">
+                                                <button class="text-primary hover:text-primary/80">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-muted-foreground hover:text-foreground">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- @END_MAP )) -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: AdminDashboard -->
+
+        <!-- Cart Overlay (User Dashboard) -->
+        <!-- @COMPONENT: CartOverlay [shopping cart sidebar] -->
+        <div id="cartOverlay" class="fixed right-0 top-0 h-full w-96 bg-card border-l border-border transform translate-x-full transition-transform z-50 hidden">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold">Your Order</h3>
+                    <button id="closeCart" class="text-muted-foreground hover:text-foreground">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4 mb-6">
+                    <!-- @MAP: cartItems.map(item => ( -->
+                    <div class="flex items-center space-x-3 p-3 border border-border rounded-lg">
+                        <!-- Spicy butter chicken curry in traditional bowl -->
+                        <img src="https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?ixlib=rb-4.0.3&w=60&h=60&fit=crop" 
+                             alt="Cart item" class="w-12 h-12 rounded-lg object-cover">
+                        <div class="flex-1">
+                            <h5 class="font-medium" data-bind="item.name">Butter Chicken</h5>
+                            <p class="text-muted-foreground text-sm" data-bind="item.restaurant">Spice Route</p>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <button class="w-6 h-6 bg-secondary rounded-full flex items-center justify-center" data-event="click:decreaseQuantity">
+                                    <i class="fas fa-minus text-xs"></i>
+                                </button>
+                                <span class="text-sm font-medium" data-bind="item.quantity">2</span>
+                                <button class="w-6 h-6 bg-primary rounded-full flex items-center justify-center" data-event="click:increaseQuantity">
+                                    <i class="fas fa-plus text-primary-foreground text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium" data-bind="item.total">₹500</p>
+                            <button class="text-destructive hover:text-destructive/80 text-sm" data-event="click:removeItem">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+
+                <div class="border-t border-border pt-4 space-y-3">
+                    <div class="flex justify-between text-sm">
+                        <span>Subtotal</span>
+                        <span data-bind="cart.subtotal">₹500</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span>Delivery Fee</span>
+                        <span data-bind="cart.deliveryFee">₹20</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span>Tax</span>
+                        <span data-bind="cart.tax">₹52</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-lg border-t border-border pt-3">
+                        <span>Total</span>
+                        <span data-bind="cart.total">₹572</span>
+                    </div>
+                </div>
+
+                <button class="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-medium mt-6" data-event="click:proceedToCheckout">
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: CartOverlay -->
+
+        <!-- Floating Cart Button (User Dashboard) -->
+        <button id="cartButton" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-primary-foreground w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-40">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="absolute -top-2 -right-2 bg-destructive text-destructive-foreground w-6 h-6 rounded-full text-xs flex items-center justify-center" data-bind="cart.itemCount">3</span>
+        </button>
+    </div>
+    <!-- @END_COMPONENT: MainApp -->
+
+    <script>
+        // TODO: Implement state management, API calls, and business logic
+        (function() {
+            // Dashboard switching functionality
+            const roleSelector = document.getElementById('roleSelector');
+            const userDashboard = document.getElementById('userDashboard');
+            const vendorDashboard = document.getElementById('vendorDashboard');
+            const adminDashboard = document.getElementById('adminDashboard');
+            const cartButton = document.getElementById('cartButton');
+
+            function showDashboard(role) {
+                // Hide all dashboards
+                userDashboard.classList.add('hidden');
+                vendorDashboard.classList.add('hidden');
+                adminDashboard.classList.add('hidden');
+                
+                // Show selected dashboard
+                switch(role) {
+                    case 'user':
+                        userDashboard.classList.remove('hidden');
+                        cartButton.style.display = 'flex';
+                        break;
+                    case 'vendor':
+                        vendorDashboard.classList.remove('hidden');
+                        cartButton.style.display = 'none';
+                        break;
+                    case 'admin':
+                        adminDashboard.classList.remove('hidden');
+                        cartButton.style.display = 'none';
+                        break;
+                }
+            }
+
+            roleSelector.addEventListener('change', function() {
+                showDashboard(this.value);
+            });
+
+            // Cart functionality
+            const cartOverlay = document.getElementById('cartOverlay');
+            const closeCartBtn = document.getElementById('closeCart');
+
+            cartButton.addEventListener('click', function() {
+                cartOverlay.classList.remove('hidden');
+                cartOverlay.classList.remove('translate-x-full');
+            });
+
+            closeCartBtn.addEventListener('click', function() {
+                cartOverlay.classList.add('translate-x-full');
+                setTimeout(() => {
+                    cartOverlay.classList.add('hidden');
+                }, 300);
+            });
+
+            // Initialize with user dashboard
+            showDashboard('user');
+        })();
+    </script>
+</body>
+</html>
