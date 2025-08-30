@@ -24,6 +24,21 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  
+  // For development, use simpler session setup
+  if (process.env.NODE_ENV === 'development') {
+    return session({
+      secret: process.env.SESSION_SECRET || 'dev-secret-key-123',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: false, // Allow HTTP in development
+        maxAge: sessionTtl,
+      },
+    });
+  }
+  
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
@@ -127,6 +142,20 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // For development purposes - bypass authentication
+  if (process.env.NODE_ENV === 'development') {
+    // Create a mock user for development
+    (req as any).user = {
+      claims: {
+        sub: 'dev-user-123',
+        email: 'dev@example.com',
+        first_name: 'Dev',
+        last_name: 'User'
+      }
+    };
+    return next();
+  }
+
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {
