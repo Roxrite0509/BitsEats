@@ -7,6 +7,8 @@ import {
   orderItems,
   type User,
   type UpsertUser,
+  type RegisterUser,
+  type LoginUser,
   type Vendor,
   type InsertVendor,
   type MenuCategory,
@@ -20,10 +22,14 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, avg, count, sum, sql, gte, like } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: RegisterUser): Promise<User>;
+  validateUser(email: string, password: string): Promise<User | null>;
   upsertUser(user: UpsertUser): Promise<User>;
   
   // Vendor operations
@@ -63,6 +69,33 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: RegisterUser): Promise<User> {
+    const hashedPassword = await bcrypt.hash(userData.password, 12);
+    const { confirmPassword, ...userToInsert } = userData;
+    
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...userToInsert,
+        password: hashedPassword,
+      })
+      .returning();
+    return user;
+  }
+
+  async validateUser(email: string, password: string): Promise<User | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user || !user.isActive) return null;
+
+    const isValid = await bcrypt.compare(password, user.password);
+    return isValid ? user : null;
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {

@@ -27,7 +27,7 @@ export const sessions = pgTable(
 );
 
 // User roles enum
-export const userRoleEnum = pgEnum("user_role", ["user", "vendor", "admin"]);
+export const userRoleEnum = pgEnum("user_role", ["user", "vendor", "admin", "delivery"]);
 
 // Order status enum
 export const orderStatusEnum = pgEnum("order_status", [
@@ -51,13 +51,15 @@ export const paymentStatusEnum = pgEnum("payment_status", [
 // Users table
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
+  email: varchar("email").unique().notNull(),
+  password: varchar("password").notNull(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: userRoleEnum("role").default("user"),
   phone: varchar("phone"),
   hostelRoom: varchar("hostel_room"),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -211,6 +213,27 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 // Reviews relations removed
 
 // Insert schemas
+export const registerUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  isActive: true,
+}).extend({
+  confirmPassword: z.string().min(6),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+export const loginUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
 export const upsertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -247,6 +270,8 @@ export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
 // Review schema removed
 
 // Types
+export type RegisterUser = z.infer<typeof registerUserSchema>;
+export type LoginUser = z.infer<typeof loginUserSchema>;
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertVendor = z.infer<typeof insertVendorSchema>;
