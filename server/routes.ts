@@ -15,6 +15,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Development role switcher
+  app.post('/api/dev/switch-role', async (req: any, res) => {
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: "Not found" });
+    }
+    
+    const { userId } = req.body;
+    const validUserIds = ['user-001', 'vendor-001', 'admin-001'];
+    
+    if (!validUserIds.includes(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+    
+    // Store current user in session
+    req.session.currentUserId = userId;
+    
+    const user = await storage.getUser(userId);
+    res.json(user);
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {

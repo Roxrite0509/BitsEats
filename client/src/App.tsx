@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { DevRoleSwitcher } from "@/components/dev-role-switcher";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
@@ -12,7 +13,7 @@ import VendorDashboard from "@/pages/vendor-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -22,9 +23,26 @@ function Router() {
     );
   }
 
+  // In development, always show content with role-based routing
+  if (process.env.NODE_ENV === 'development') {
+    return (
+      <>
+        <DevRoleSwitcher />
+        <Switch>
+          <Route path="/" component={user?.role === 'admin' ? AdminDashboard : user?.role === 'vendor' ? VendorDashboard : UserDashboard} />
+          <Route path="/dashboard" component={UserDashboard} />
+          <Route path="/vendor" component={VendorDashboard} />
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/home" component={Home} />
+          <Route component={NotFound} />
+        </Switch>
+      </>
+    );
+  }
+
   return (
     <Switch>
-      {!isAuthenticated ? (
+      {!user ? (
         <Route path="/" component={Landing} />
       ) : (
         <>

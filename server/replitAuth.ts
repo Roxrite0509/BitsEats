@@ -82,6 +82,19 @@ async function upsertUser(
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
+  
+  // Skip complex auth setup in development
+  if (process.env.NODE_ENV === 'development') {
+    // Simple session for role switching
+    app.use(session({
+      secret: 'dev-secret-123',
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: false }
+    }));
+    return;
+  }
+  
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
@@ -144,13 +157,11 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   // For development purposes - bypass authentication
   if (process.env.NODE_ENV === 'development') {
-    // Create a mock user for development
+    // Get current user from session or default to admin
+    const currentUserId = (req.session as any)?.currentUserId || 'admin-001';
     (req as any).user = {
       claims: {
-        sub: 'dev-user-123',
-        email: 'dev@example.com',
-        first_name: 'Dev',
-        last_name: 'User'
+        sub: currentUserId
       }
     };
     return next();
